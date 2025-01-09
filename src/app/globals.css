@@ -19,3 +19,24 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Estiliza a barra de rolagem inteira */
+::-webkit-scrollbar {
+  width: 10px; /* Largura da barra de rolagem */
+}
+
+/* Estiliza o "polegar" da barra de rolagem */
+::-webkit-scrollbar-thumb {
+  background: #888; /* Cor do polegar */
+  border-radius: 5px; /* Bordas arredondadas */
+}
+
+/* Aplica estilo quando o mouse está sobre a barra de rolagem */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Cor ao passar o mouse */
+}
+
+/* Estiliza a "trilha" da barra de rolagem */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Cor de fundo da trilha */
+}

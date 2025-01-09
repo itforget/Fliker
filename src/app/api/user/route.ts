@@ -22,7 +22,7 @@ export async function GET(req: Request) {
       return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
     }
 
-    const { password, ...userWithoutPassword } = user;
+    const { ...userWithoutPassword } = user;
     return new Response(JSON.stringify(userWithoutPassword), { status: 200 });
     } catch (error) {
     return new Response(JSON.stringify({ error: 'Invalid or expired token', details: (error as Error).message }), { status: 401 });

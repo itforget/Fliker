@@ -8,7 +8,6 @@ interface CreatePostFormProps {
 }
 
 
-// CreatePostForm Component
 export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     const [content, setContent] = useState('');
     const [loading, setLoading] = useState(false);
@@ -63,7 +62,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 <button 
                     type="submit" 
                     disabled={loading || content.length === 0 || content.length > 280} 
-                    className={`px-6 py-2 text-white font-semibold rounded-full focus:outline-none transition-colors ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+                    className={`px-6 py-2 cursor-pointer text-white font-semibold rounded-full focus:outline-none transition-colors ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
                 >
                     {loading ? 'Posting...' : 'Post'}
                 </button>

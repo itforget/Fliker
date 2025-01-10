@@ -10,12 +10,20 @@ export default function useAuth() {
 
     useEffect(() => {
         const checkAuthentication = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setIsAuthenticated(false);
+                setLoading(false);
+                return;
+            }
+
             try {
-                const response = await axios.get('/api/user', {
+                const response = await axios.get('/api/auth', {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        Authorization: `Bearer ${token}`,
                     },
                 });
+
                 if (response.status === 200) {
                     setIsAuthenticated(true);
                     setUser(response.data);

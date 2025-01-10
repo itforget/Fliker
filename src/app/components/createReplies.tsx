@@ -48,7 +48,7 @@ export default function CreateReplies({ post, onReply }: CreateRepliesProps) {
                 />
                 <button 
                 type="submit"
-                className="p-2 bg-blue-400 rounded-lg hover:bg-blue-700 disabled:opacity-50" 
+                className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50" 
                 disabled={loading}
                 >
                 Submit

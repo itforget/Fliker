@@ -5,7 +5,7 @@ import CreatePost from '../components/createPost';
 import { Post } from '../types';
 import GiveLike from '../components/giveLike';
 import CreateReplies from '../components/createReplies';
-import { Bell, DevToLogo, HouseSimple, MagnifyingGlass, Power, Spinner, User } from '@phosphor-icons/react';
+import { Bell, Chat, DevToLogo, HouseSimple, MagnifyingGlass, Power, Spinner, User, UserCircle } from '@phosphor-icons/react';
 import useAuth from '../utils/auth';
 import Link from 'next/link';
 import ThemeToggle from '../components/themeToggle';
@@ -37,7 +37,8 @@ export default function PostsPage() {
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
-            route.push('/');
+            localStorage.removeItem('token');
+            route.push('/login');
         }
     }, [isAuthenticated, loading, route]);
 
@@ -94,28 +95,21 @@ export default function PostsPage() {
                                 key={post.id}
                                 className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-400 max-w-3xl mx-auto dark:bg-gray-900 text-gray-900 dark:text-white"
                             >
-                                <div className="flex flex-row items-center justify-between">
+                                <div className="flex flex-row items-center justify-between bg-gray-700 p-2 rounded-xl">
                                     <div className='flex flex-row items-center gap-2'>
-                                        <p className='text-xl font-bold'>{post.author?.name}</p>
+                                        <div className='flex flex-col items-center p-2 bg-gray-800 rounded-md'>
+                                            <UserCircle size={60} />
+                                            <p className='text-xl font-bold'>{post.author ? post.author.name.charAt(0).toUpperCase() + post.author.name.slice(1) : 'Autor desconhecido'}</p>
+                                        </div>
                                         <p>👉</p>
                                         <p className="text-xl">{post.content}</p>
                                     </div>
-                                    <GiveLike post={post} onLike={fetchPosts} />
+                                    <div className='flex flex-row items-center gap-2'>
+                                        <GiveLike post={post} onLike={fetchPosts} />
+                                        <p className='flex flex-row gap-1 items-center'><Chat size={24} />{post.replies?.length}</p>
+                                    </div>
                                 </div>
-                                <div className="mt-4">
-                                    <h4 className="text-sm mb-2">Respostas</h4>
-                                    <ul className="space-y-4">
-                                        {post.replies?.map((reply) => (
-                                            <li key={reply.id} className="border border-gray-300 rounded-xl p-2">
-                                                <p className="font-semibold text-sm">
-                                                    {reply.author ? reply.author.name.charAt(0).toUpperCase() + reply.author.name.slice(1) : 'Autor desconhecido'}
-                                                </p>
-                                                <p>{reply.content}</p>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <CreateReplies post={post} onReply={fetchPosts} />
-                                </div>
+                                <CreateReplies post={post} onReply={fetchPosts} />
                             </div>
                         ))
                     ) : (
@@ -125,6 +119,6 @@ export default function PostsPage() {
             </div>
         </div>
     ) : (
-        <div>Redirecionando...</div> 
+        <div>Redirecionando...</div>
     );
 }

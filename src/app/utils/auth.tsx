@@ -29,7 +29,7 @@ export default function useAuth() {
                     setUser(response.data);
                 }
             } catch (error) {
-                if (axios.isAxiosError(error) && error.response?.status === 401) {
+                if (axios.isAxiosError(error)) {
                     setError('Usuário não autenticado');
                 } else {
                     setError('Ocorreu um erro ao verificar a autenticação');

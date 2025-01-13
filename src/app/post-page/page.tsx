@@ -1,24 +1,23 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
-import CreatePost from '../components/createPost';
-import { Post } from '../types';
-import GiveLike from '../components/giveLike';
-import CreateReplies from '../components/createReplies';
-import { Bell, Chat, DevToLogo, HouseSimple, MagnifyingGlass, Power, Spinner, User, UserCircle } from '@phosphor-icons/react';
-import useAuth from '../utils/auth';
-import Link from 'next/link';
-import ThemeToggle from '../components/themeToggle';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { Post } from '../types';
+import Sidebar from '../components/sideBar';
+import PostCard from '../components/cardPost';
+import CreatePost from '../components/createPost';
+import LoadingScreen from '../components/loadingPage';
+import useAuth from '../utils/auth';
 
 export default function PostsPage() {
     const [posts, setPosts] = useState<Post[]>([]);
+    const { isAuthenticated, loading } = useAuth();
+    const router = useRouter();
 
     const fetchPosts = useCallback(async () => {
         try {
             const response = await axios.get('/api/posts');
-            const sortedPosts = response.data.sort((a: Post, b: Post) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-            setPosts(sortedPosts);
+            setPosts(response.data);
         } catch (error) {
             console.error('Failed to fetch posts:', error);
         }
@@ -28,89 +27,39 @@ export default function PostsPage() {
         setPosts((prevPosts) => [newPost, ...prevPosts]);
     }, []);
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        router.push('/');
+    };
+
     useEffect(() => {
         fetchPosts();
     }, [fetchPosts]);
 
-    const { isAuthenticated, loading } = useAuth();
-    const route = useRouter();
-
     useEffect(() => {
         if (!loading && !isAuthenticated) {
-            localStorage.removeItem('token');
-            route.push('/login');
+            router.push('/login');
         }
-    }, [isAuthenticated, loading, route]);
+    }, [isAuthenticated, loading, router]);
 
-    return loading ? (
-        <div className="flex justify-center items-center w-full h-screen">
-            <Spinner size={40} className="animate-spin" />
-        </div>
-    ) : isAuthenticated ? (
-        <div className="flex ">
-            <div className="w-1/4 h-screen p-4 bg-gray-800 dark:bg-gray-900 text-white dark:text-white">
-                <div className="flex flex-col space-y-6">
-                    <DevToLogo className="h-8 w-8" />
-                    <nav className="space-y-4">
-                        <div className="flex items-center space-x-3 hover:bg-blue-500 p-2 rounded-xl">
-                            <HouseSimple className="h-6 w-6" />
-                            <Link href="/">Início</Link>
-                        </div>
-                        <div className="flex items-center space-x-3 hover:bg-blue-500 p-2 rounded-xl">
-                            <MagnifyingGlass className="h-6 w-6" />
-                            <Link href="">Buscar</Link>
-                        </div>
-                        <div className="flex items-center space-x-3 hover:bg-blue-500 p-2 rounded-xl">
-                            <Bell className="h-6 w-6" />
-                            <Link href="">Notificações</Link>
-                        </div>
-                        <div className="flex items-center space-x-3 hover:bg-blue-500 p-2 rounded-xl">
-                            <User className="h-6 w-6" />
-                            <Link href="/perfil">Perfil</Link>
-                        </div>
-                        <div className="flex flex-row items-center space-x-3">
-                            <ThemeToggle />
-                            <button
-                                onClick={() => {
-                                    localStorage.removeItem('token');
-                                    route.push('/');
-                                }}
-                                className="flex flex-row gap-2 items-center p-2 bg-red-500 text-white font-semibold rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            >
-                                <Power size={20} /> Sair
-                            </button>
-                        </div>
-                    </nav>
-                </div>
-            </div>
+    const sortedPosts = useMemo(() => {
+        return [...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }, [posts]);
 
+    if (loading) return <LoadingScreen />;
+
+    if (!isAuthenticated) return <div>Redirecionando...</div>;
+
+    return (
+        <div className="flex">
+            <Sidebar onLogout={handleLogout} />
             <div className="w-3/4 p-4 h-screen overflow-auto dark:bg-gray-950 text-gray-900 dark:text-white">
                 <h1 className="text-3xl font-bold text-gray-800 mb-6">O que está acontecendo?</h1>
                 <CreatePost onPostCreated={handlePostCreated} />
-
-                <div className="mt-6 space-y-6 ">
-                    {posts.length > 0 ? (
-                        posts.map((post) => (
-                            <div
-                                key={post.id}
-                                className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-400 max-w-3xl mx-auto dark:bg-gray-900 text-gray-900 dark:text-white"
-                            >
-                                <div className="flex flex-row items-center justify-between bg-gray-700 p-2 rounded-xl">
-                                    <div className='flex flex-row items-center gap-2'>
-                                        <div className='flex flex-col items-center p-2 bg-gray-800 rounded-md'>
-                                            <UserCircle size={60} />
-                                            <p className='text-xl font-bold'>{post.author ? post.author.name.charAt(0).toUpperCase() + post.author.name.slice(1) : 'Autor desconhecido'}</p>
-                                        </div>
-                                        <p>👉</p>
-                                        <p className="text-xl">{post.content}</p>
-                                    </div>
-                                    <div className='flex flex-row items-center gap-2'>
-                                        <GiveLike post={post} onLike={fetchPosts} />
-                                        <p className='flex flex-row gap-1 items-center'><Chat size={24} />{post.replies?.length}</p>
-                                    </div>
-                                </div>
-                                <CreateReplies post={post} onReply={fetchPosts} />
-                            </div>
+                <div className="mt-6 space-y-6">
+                    {sortedPosts.length > 0 ? (
+                        sortedPosts.map((post) => (
+                            <PostCard key={post.id} post={post} onLike={fetchPosts} onReply={fetchPosts} />
                         ))
                     ) : (
                         <p className="text-center">Nenhum post encontrado.</p>
@@ -118,7 +67,5 @@ export default function PostsPage() {
                 </div>
             </div>
         </div>
-    ) : (
-        <div>Redirecionando...</div>
     );
 }

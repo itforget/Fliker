@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState } from 'react';
-import useAuth from '../utils/auth';
 import { Post } from '../types';
+import useUser from '../hooks/useUser';
 
 interface CreatePostFormProps {
     onPostCreated: (newPost: Post) => void;
@@ -13,15 +13,14 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const user = useAuth();
-    const authorId = user?.user?.id;
+    const { user } = useUser();
 
     const createPost = async (newPost: { content: string }) => {
         try {
             setLoading(true);
             const response = await axios.post('/api/posts', {
                 content: newPost.content,
-                authorId: authorId
+                authorId: user?.id,
             });
             setLoading(false);
             return response.data;

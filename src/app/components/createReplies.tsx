@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState } from 'react';
 import { Post } from '../types';
-import useAuth from '../utils/auth';
+import useUser from '../hooks/useUser';
 
 interface CreateRepliesProps {
     post: Post;
@@ -9,11 +9,12 @@ interface CreateRepliesProps {
 }
 
 export default function CreateReplies({ post, onReply }: CreateRepliesProps) {
-    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [content, setContent] = useState('');
     const [showReplies, setShowReplies] = useState(false);
+
+    const { user } = useUser();
 
     const createReplies = async (event: React.FormEvent) => {
         event.preventDefault();

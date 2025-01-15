@@ -32,9 +32,8 @@ export default function Login() {
 
     try {
       const response = await axios.post('/api/user/login', { email, password });
-      if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      router.replace('/post-page');
+      if (response.status === 200) {
+        router.replace('/post-page');
       } else {
       setError(response.data.message || 'Login failed. Please try again.');
       }

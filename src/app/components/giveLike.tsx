@@ -2,16 +2,16 @@ import axios from 'axios';
 import { useState } from 'react';
 import { Post } from '../types';
 import { Heart, Spinner } from '@phosphor-icons/react';
-import useAuth from '../utils/auth';
+import useUser from '../hooks/useUser';
 interface GiveLikeProps {
     post: Post;
     onLike: () => void;
 }
 
 export default function GiveLike({ post, onLike }: GiveLikeProps) {
-    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { user } = useUser();
 
     const giveLike = async () => {
         try {

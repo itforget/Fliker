@@ -49,7 +49,7 @@ export default function PostList() {
                             key={post.id}
                             post={post}
                             onLike={FetchPosts}
-                            onReply={FetchPosts}
+                            onComment={FetchPosts}
                         />
                     ))
                 ) : (

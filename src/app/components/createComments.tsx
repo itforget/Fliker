@@ -2,25 +2,25 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Post } from '../types';
 import UseUser from '../hooks/useUser';
-import { CreateReply } from '../hooks/createReply'; 
+import { CreateComment } from '../hooks/createComments'; 
 
-interface CreateRepliesProps {
+interface CreateCommentsProps {
     post: Post;
-    onReply: () => void;
+    onComment: () => void;
 }
 
-export default function CreateReplies({ post, onReply }: CreateRepliesProps) {
+export default function CreateComments({ post, onComment }: CreateCommentsProps) {
     const [content, setContent] = useState('');
-    const [showReplies, setShowReplies] = useState(false);
+    const [showComments, setShowComments] = useState(false);
     const queryClient = useQueryClient();
     const { user } = UseUser();
 
     const mutation = useMutation({
-        mutationFn: CreateReply, 
-        onSuccess: (newReply) => {
-            queryClient.invalidateQueries({ queryKey: ['replies', post.id] });
+        mutationFn: CreateComment, 
+        onSuccess: (newComment) => {
+            queryClient.invalidateQueries({ queryKey: ['Comments', post.id] });
             queryClient.invalidateQueries({ queryKey: ['posts'] });
-            onReply(); 
+            onComment(); 
             setContent(''); 
         },
     });
@@ -36,7 +36,7 @@ export default function CreateReplies({ post, onReply }: CreateRepliesProps) {
         }
     };
 
-    const sortedReplies = post.replies?.sort((a, b) => {
+    const sortedComments = post.comments?.sort((a, b) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }) || [];
 
@@ -44,13 +44,13 @@ export default function CreateReplies({ post, onReply }: CreateRepliesProps) {
         <div className="container mx-auto p-4">
             <div className="flex justify-center">
                 <button
-                    onClick={() => setShowReplies(!showReplies)}
+                    onClick={() => setShowComments(!showComments)}
                     className="hover:underline"
                 >
-                    {showReplies ? 'Hide Comments' : 'Show Comments'}
+                    {showComments ? 'Hide Comments' : 'Show Comments'}
                 </button>
             </div>
-            {showReplies && (
+            {showComments && (
                 <div>
                     <form className="flex flex-col space-y-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-white mt-2" onSubmit={handleSubmit}>
                         <div className="flex items-center space-x-2 border-b border-b-gray-300 pb-4">
@@ -74,12 +74,12 @@ export default function CreateReplies({ post, onReply }: CreateRepliesProps) {
                     <div className="mt-4">
                         <h4 className="text-sm mb-2">Respostas</h4>
                         <ul className="space-y-4">
-                            {sortedReplies.map((reply) => (
-                                <li key={reply.id} className="border border-gray-300 rounded-xl p-2">
+                            {sortedComments.map((comment) => (
+                                <li key={comment.id} className="border border-gray-300 rounded-xl p-2">
                                     <p className="font-semibold text-sm">
-                                        {reply.author ? reply.author.name.charAt(0).toUpperCase() + reply.author.name.slice(1) : 'Autor desconhecido'}
+                                        {comment.author ? comment.author.name.charAt(0).toUpperCase() + comment.author.name.slice(1) : 'Autor desconhecido'}
                                     </p>
-                                    <p>{reply.content}</p>
+                                    <p>{comment.content}</p>
                                 </li>
                             ))}
                         </ul>

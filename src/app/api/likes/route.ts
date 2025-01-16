@@ -14,6 +14,28 @@ export async function POST(req: Request) {
       },
     });
 
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { 
+        authorId: true 
+      },
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+
+    if (post && user) {
+      await prisma.notification.create({
+        data: {
+          type: 'like',
+          message: `${user.name} curtiu sua publicação.`,
+          userId: post.authorId,
+        },
+      });
+    }
+
     return new Response(JSON.stringify(like), { status: 201 });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Failed to create like', details: error }), { status: 500 });
@@ -23,22 +45,25 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
+    const postId = searchParams.get('postId');
 
-    if (!id) {
-      return new Response(JSON.stringify({ error: 'ID is required' }), { status: 400 });
+    if (!postId) {
+      return new Response(JSON.stringify({ error: 'Post ID is required' }), { status: 400 });
     }
 
-    const like = await prisma.like.findUnique({
-      where: { id: Number(id) },
+    const likes = await prisma.like.findMany({
+      where: { postId: Number(postId) },
+      include: {
+        user: {
+          select: {
+            name: true, 
+          },
+        },
+      },
     });
 
-    if (!like) {
-      return new Response(JSON.stringify({ error: 'Like not found' }), { status: 404 });
-    }
-
-    return new Response(JSON.stringify(like), { status: 200 });
+    return new Response(JSON.stringify(likes), { status: 200 });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to fetch like', details: error }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Failed to fetch likes', details: error }), { status: 500 });
   }
 }

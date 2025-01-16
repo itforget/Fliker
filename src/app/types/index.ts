@@ -8,7 +8,7 @@ export type Post = {
     title: string;
     content: string;
     likes?: Likes[];
-    replies?: Reply[];
+    comments?: Comment[];
     createdAt: Date;
     author: {
       id: number;
@@ -17,7 +17,7 @@ export type Post = {
 }
 
 
-export type Reply = {
+export type Comment = {
     id: number;
     content: string;
     createdAt: Date;
@@ -32,4 +32,13 @@ export type Likes = {
     id?: number;
     userId: number;
     postId: number;
+}
+
+export type Notification = {
+    id: number;
+    message: string;
+    createdAt: Date;
+    userId: number;
+    type: string;
+    read: boolean;
 }

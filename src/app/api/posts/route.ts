@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       },
       include: {
         author: true,
-        replies: true,
+        comments: true,
         likes: true,
       },
     });
@@ -35,7 +35,7 @@ export async function GET() {
             name: true,
           },
         },
-        replies: {
+        comments: {
           include: {
             author: {
               select: {

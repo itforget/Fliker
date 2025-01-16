@@ -1,15 +1,15 @@
 import { UserCircle, Chat } from '@phosphor-icons/react';
 import GiveLike from './giveLike';
-import CreateReplies from './createReplies';
+import CreateComments from './createComments';
 import { Post } from '../types';
 
 interface PostCardProps {
     post: Post;
     onLike: () => void;
-    onReply: () => void;
+    onComment: () => void;
 }
 
-export default function PostCard({ post, onLike, onReply }: PostCardProps) {
+export default function PostCard({ post, onLike, onComment }: PostCardProps) {
     return (
         <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-400 max-w-3xl mx-auto dark:bg-gray-900 text-gray-900 dark:text-white">
             <div className="flex flex-row items-center justify-between dark:bg-gray-700 p-2 rounded-xl border border-gray-300">
@@ -27,11 +27,11 @@ export default function PostCard({ post, onLike, onReply }: PostCardProps) {
                     <GiveLike post={post} onLike={onLike} />
                     <p className="flex flex-row gap-1 items-center">
                         <Chat size={24} />
-                        {post.replies?.length}
+                        {post.comments?.length}
                     </p>
                 </div>
             </div>
-            <CreateReplies post={post} onReply={onReply} />
+            <CreateComments post={post} onComment={onComment} />
         </div>
     );
 };

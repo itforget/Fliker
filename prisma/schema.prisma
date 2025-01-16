@@ -14,28 +14,28 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  password  String
-  posts     Post[]
-  replies   Reply[]
-  likes     Like[]
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  name     String?
+  password String
+  posts    Post[]
+  comments Comment[]
+  likes    Like[]
 
   Notification Notification[]
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   content   String
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
-  replies   Reply[]
+  comments  Comment[]
   likes     Like[]
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
-model Reply {
+model Comment {
   id        Int      @id @default(autoincrement())
   content   String
   post      Post     @relation(fields: [postId], references: [id])
@@ -46,19 +46,19 @@ model Reply {
 }
 
 model Like {
-  id        Int      @id @default(autoincrement())
-  post      Post     @relation(fields: [postId], references: [id])
-  postId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
+  id     Int  @id @default(autoincrement())
+  post   Post @relation(fields: [postId], references: [id])
+  postId Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 }
 
 model Notification {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
-  type      String   
-  message   String   
-  read      Boolean  @default(false) 
-  createdAt DateTime @default(now()) 
+  type      String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

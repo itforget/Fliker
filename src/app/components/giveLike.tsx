@@ -18,8 +18,8 @@ export default function GiveLike({ post, onLike }: GiveLikeProps) {
     const mutation = useMutation({
         mutationFn: giveLikeToPost, 
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['likes', post.id] }); 
             queryClient.invalidateQueries({ queryKey: ['posts'] });
+            queryClient.invalidateQueries({ queryKey: ['likes', post.id] }); 
             onLike(); 
         },
         onError: (error: unknown) => {

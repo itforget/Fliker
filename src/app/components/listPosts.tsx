@@ -19,6 +19,7 @@ export default function PostList() {
     const handlePostCreated = (newPost: Post) => {
         queryClient.setQueryData<Post[]>(['posts'], (oldPosts = []) => [newPost, ...oldPosts]);
         queryClient.invalidateQueries({ queryKey: ['posts'] });
+        queryClient.invalidateQueries({ queryKey: ['likes' + newPost.id] });
     };
 
     const sortedPosts = posts?.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

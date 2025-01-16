@@ -6,6 +6,8 @@ import {
   User,
   Power,
   UserCircle,
+  Eye,
+  EyeSlash,
 } from "@phosphor-icons/react";
 import { Popover, PopoverPanel, PopoverButton } from "@headlessui/react";
 import ThemeToggle from "./themeToggle";
@@ -26,27 +28,26 @@ export default function Sidebar() {
 
   const queryClient = useQueryClient();
 
-  const {
-    data: notifications,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: notifications, isLoading, error } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => fetchNotifications(user?.id ?? 0),
-    staleTime: 30000,
     refetchInterval: 30000,
   });
 
   const markAsReadMutation = useMutation({
+    mutationKey: ["readnotification"],
     mutationFn: markNotificationAsRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["deletenotification"] });
     },
   });
 
   const deleteMutation = useMutation({
+    mutationKey: ["deletenotification"],
     mutationFn: deleteReadNotifications,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["readnotification"] });
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
@@ -76,25 +77,31 @@ export default function Sidebar() {
               {isLoading && <p>Carregando...</p>}
               {error && <p>Erro ao carregar notificações.</p>}
               {notifications?.length === 0 && <p>Você não tem notificações.</p>}
-              <ul>
+              <ul
+                className={`overflow-y-auto ${notifications && notifications.length > 5 ? "max-h-40" : ""
+                  }`}
+              >
                 {notifications?.map((notification: Notification) => (
                   <li
                     key={notification.id}
                     className="flex justify-between items-center mb-2"
                   >
-                    <span className="p-2 bg-green-400 rounded-lg ">{notification.message}</span>
-                    {!notification.read && (
-                      <button
-                        onClick={() =>
-                          markAsReadMutation.mutate(notification.id)
-                        }
-                        className="text-blue-500"
-                      >
-                      </button>
-                    )}
+                    <span>
+                      {notification.message.split(' ').map((word, index) =>
+                        index === 0 ?
+                          <span key={index} className="font-bold text-blue-600">{word} </span> :
+                          word + ' '
+                      )}
+                    </span>                    <button
+                      onClick={() => markAsReadMutation.mutate(notification.id)}
+                      className="text-gray-800"
+                    >
+                      {notification.read ? <Eye size={20} /> : <EyeSlash size={20} />}
+                    </button>
                   </li>
                 ))}
               </ul>
+
               <button
                 onClick={() => deleteMutation.mutate()}
                 className="mt-4 text-red-500"
@@ -104,7 +111,6 @@ export default function Sidebar() {
             </PopoverPanel>
           </Popover>
 
-          
           <Popover className="relative">
             <PopoverButton className="flex items-center space-x-3 hover:bg-blue-500 p-2 rounded-xl">
               <User className="h-6 w-6" />

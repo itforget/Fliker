@@ -31,8 +31,8 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
         }
     };
 
-    const onEmojiClick = (emojiObject: any) => {
-        setContent((prevContent) => prevContent + emojiObject.emoji);
+    const onEmojiClick = (emojiObject: unknown) => {
+        setContent((prevContent) => prevContent + (emojiObject as { emoji: string }).emoji);
     };
 
     return (

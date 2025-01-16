@@ -39,8 +39,8 @@ export default function CreateComments({ post, onComment }: CreateCommentsProps)
     }
   };
 
-  const onEmojiClick = (emojiObject: any) => {
-    setContent((prevContent) => prevContent + emojiObject.emoji);
+  const onEmojiClick = (emojiObject: unknown) => {
+    setContent((prevContent) => prevContent + (emojiObject as { emoji: string }).emoji);
     setShowEmojiPicker(false);
   };
 

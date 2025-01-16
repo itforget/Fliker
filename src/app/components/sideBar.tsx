@@ -11,11 +11,11 @@ import { Popover, PopoverPanel, PopoverButton } from "@headlessui/react";
 import ThemeToggle from "./themeToggle";
 import { useRouter } from "next/navigation";
 import { destroyCookie } from "nookies";
-import useUser from "../hooks/useUser";
+import UseUser from "../hooks/useUser";
 
 export default function Sidebar() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = UseUser();
   const handleLogout = () => {
     destroyCookie(null, "token");
     router.push("/");

@@ -20,6 +20,7 @@ export type Post = {
 export type Reply = {
     id: number;
     content: string;
+    createdAt: Date;
     author: {
       id: number;
       name: string;

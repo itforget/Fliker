@@ -1,52 +1,38 @@
-import axios from 'axios';
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Post } from '../types';
-import useUser from '../hooks/useUser';
+import UseUser from '../hooks/useUser';
+import { CreatePost } from '../hooks/createPostMutation';
 
 interface CreatePostFormProps {
     onPostCreated: (newPost: Post) => void;
 }
 
-
 export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     const [content, setContent] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
+    const { user } = UseUser();
 
-    const { user } = useUser();
+    const mutation = useMutation({
+        mutationFn: CreatePost,
+        onSuccess: (newPost) => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            onPostCreated(newPost);
+        },
+    });
 
-    const createPost = async (newPost: { content: string }) => {
-        try {
-            setLoading(true);
-            const response = await axios.post('/api/posts', {
-                content: newPost.content,
-                authorId: user?.id,
-            });
-            setLoading(false);
-            return response.data;
-        } catch (error) {
-            console.error('Failed to create post:', error);
-            setLoading(false);
-            setError('Failed to create post.');
-            throw error;
-        }
-    };
-
-    const handleSubmit = async (event: React.FormEvent) => {
+    const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        try {
-            const newPost = { content };
-            const createdPost = await createPost(newPost);
-            setContent('');
-            onPostCreated(createdPost);
-        } catch (error) {
-            console.error('Failed to create post:', error);
-            setError('Failed to create post.');
+        if (content.trim().length > 0 && content.trim().length <= 280) {
+            mutation.mutate({ content, authorId: user?.id }); 
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto bg-white p-4 rounded-lg shadow-lg mt-6  dark:bg-gray-900 text-gray-900 dark:text-white">
+        <form
+            onSubmit={handleSubmit}
+            className="max-w-3xl mx-auto bg-white p-4 rounded-lg shadow-lg mt-6 dark:bg-gray-900 text-gray-900 dark:text-white"
+        >
             <textarea
                 id="content"
                 placeholder="What's happening?"
@@ -54,19 +40,23 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                 onChange={(e) => setContent(e.target.value)}
                 required
                 rows={4}
-                className="w-full p-3 border  dark:bg-gray-950 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 border dark:bg-gray-950 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div className="flex justify-between items-center mt-4">
                 <span className="text-sm text-gray-500">{content.length} / 280</span>
-                <button 
-                    type="submit" 
-                    disabled={loading || content.length === 0 || content.length > 280} 
-                    className={`px-6 py-2 cursor-pointer text-white font-semibold rounded-full focus:outline-none transition-colors ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+                <button
+                    type="submit"
+                    disabled={mutation.isPending || content.length === 0 || content.length > 280}
+                    className={`px-6 py-2 cursor-pointer text-white font-semibold rounded-full focus:outline-none transition-colors ${
+                        mutation.isPending ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
+                    }`}
                 >
-                    {loading ? 'Posting...' : 'Post'}
+                    {mutation.isPending ? 'Posting...' : 'Post'}
                 </button>
             </div>
-            {error && <p className="text-center text-red-500 mt-4">{error}</p>}
+            {mutation.isError && (
+                <p className="text-center text-red-500 mt-4">Failed to create post. Try again later.</p>
+            )}
         </form>
     );
 }

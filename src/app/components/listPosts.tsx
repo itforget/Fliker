@@ -1,36 +1,27 @@
 'use client';
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import axios from 'axios';
-import { Post } from '../types';
+
 import PostCard from './cardPost';
 import CreatePost from './createPost';
+import { FetchPosts } from '../hooks/fetchPosts';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Post } from '../types';
 
 export default function PostList() {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const queryClient = useQueryClient();
 
-    const fetchPosts = useCallback(async () => {
-        try {
-            const response = await axios.get('/api/posts');
-            setPosts(response.data);
-        } catch (error) {
-            console.error('Failed to fetch posts:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+    const { isLoading, error, data: posts } = useQuery({
+        queryKey: ['posts'],
+        queryFn: FetchPosts,
+        staleTime: 30000,
+        refetchInterval: 30000,
+    });
 
-    const handlePostCreated = useCallback((newPost: Post) => {
-        setPosts((prevPosts) => [newPost, ...prevPosts]);
-    }, []);
+    const handlePostCreated = (newPost: Post) => {
+        queryClient.setQueryData<Post[]>(['posts'], (oldPosts = []) => [newPost, ...oldPosts]);
+        queryClient.invalidateQueries({ queryKey: ['posts'] });
+    };
 
-    const sortedPosts = useMemo(() => {
-        return [...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }, [posts]);
-
-    useEffect(() => {
-        fetchPosts();
-    }, [fetchPosts]);
+    const sortedPosts = posts?.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     if (isLoading) {
         return (
@@ -40,13 +31,26 @@ export default function PostList() {
         );
     }
 
+    if (error) {
+        return (
+            <div className="text-center text-red-500">
+                Ocorreu um erro ao carregar os posts. Tente novamente mais tarde.
+            </div>
+        );
+    }
+
     return (
         <div>
             <CreatePost onPostCreated={handlePostCreated} />
             <div className="mt-6 space-y-6">
-                {sortedPosts.length > 0 ? (
+                {sortedPosts && sortedPosts.length > 0 ? (
                     sortedPosts.map((post) => (
-                        <PostCard key={post.id} post={post} onLike={fetchPosts} onReply={fetchPosts} />
+                        <PostCard
+                            key={post.id}
+                            post={post}
+                            onLike={FetchPosts}
+                            onReply={FetchPosts}
+                        />
                     ))
                 ) : (
                     <p className="text-center">Nenhum post encontrado.</p>

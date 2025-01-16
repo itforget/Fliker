@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./utils/provider";
+import TanstackProvider from "./utils/stackProvider";
 
 const roboto = Roboto({
   weight: ["400", "100", "300", "500", "700", "900"],
@@ -23,9 +24,11 @@ export default function RootLayout({
       <body
         className={`${roboto.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
       >
+        <TanstackProvider>
         <ThemeProvider>
           {children}
         </ThemeProvider>
+        </TanstackProvider>
       </body>
     </html>
   );

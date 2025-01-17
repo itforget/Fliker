@@ -1,5 +1,4 @@
 'use client';
-
 import PostCard from './cardPost';
 import CreatePost from './createPost';
 import { FetchPosts } from '../hooks/fetchPosts';
@@ -12,7 +11,6 @@ export default function PostList() {
     const { isLoading, error, data: posts } = useQuery({
         queryKey: ['posts'],
         queryFn: FetchPosts,
-        staleTime: 30000,
         refetchInterval: 30000,
     });
 
@@ -22,7 +20,7 @@ export default function PostList() {
         queryClient.invalidateQueries({ queryKey: ['likes' + newPost.id] });
     };
 
-    const sortedPosts = posts?.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const sortedPosts = posts?.slice().sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
 
     if (isLoading) {
         return (

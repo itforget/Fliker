@@ -28,12 +28,14 @@ model User {
 model Post {
   id        Int       @id @default(autoincrement())
   content   String
+  videoUrl  String?  
   author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
   comments  Comment[]
   likes     Like[]
   createdAt DateTime  @default(now())
 }
+
 
 model Comment {
   id        Int      @id @default(autoincrement())

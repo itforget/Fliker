@@ -1,17 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import ReactPlayer from 'react-player'; 
 import { Post } from '../types';
 import UseUser from '../hooks/useUser';
 import { CreatePost } from '../hooks/createPostMutation';
 import EmojiPicker from 'emoji-picker-react';
+import { YouTubeEmbed } from "react-social-media-embed";
+import VideoViewer from './videoViewer';
 
 interface CreatePostFormProps {
     onPostCreated: (newPost: Post) => void;
 }
 
+const extractVideoLink = (text: string): { videoLink: string | null; remainingContent: string } => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const matches = text.match(urlRegex);
+    if (matches && matches.length > 0) {
+        const videoLink = matches[0];
+        const remainingContent = text.replace(videoLink, '').trim();
+        return { videoLink, remainingContent };
+    }
+    return { videoLink: null, remainingContent: text.trim() };
+};
+
 export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     const [content, setContent] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [videoLink, setVideoLink] = useState<string | null>(null);
     const queryClient = useQueryClient();
     const { user } = UseUser();
 
@@ -21,13 +36,25 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
         onSuccess: (newPost) => {
             queryClient.invalidateQueries({ queryKey: ['posts'] });
             onPostCreated(newPost);
+            setContent(''); 
+            setVideoLink(null); 
         },
     });
+
+    useEffect(() => {
+        const { videoLink } = extractVideoLink(content);
+        setVideoLink(videoLink);
+    }, [content]);
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
         if (content.trim().length > 0 && content.trim().length <= 280) {
-            mutation.mutate({ content, authorId: user?.id }); 
+            const { videoLink, remainingContent } = extractVideoLink(content);
+            mutation.mutate({
+                content: remainingContent,
+                authorId: user?.id,
+                videoUrl: videoLink,
+            });
         }
     };
 
@@ -38,7 +65,7 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     return (
         <form
             onSubmit={handleSubmit}
-            className="max-w-3xl mx-auto bg-white p-4 rounded-lg shadow-lg mt-6 dark:bg-gray-900 text-gray-900 dark:text-white"
+            className="max-w-3xl mx-auto bg-white border border-gray-400 p-4 rounded-lg shadow-lg mt-6 dark:bg-gray-900 text-gray-900 dark:text-white"
         >
             <div className="relative">
                 <textarea
@@ -63,6 +90,16 @@ export default function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
                     </div>
                 )}
             </div>
+
+            {videoLink && (
+                <div className="mt-4">
+                    <p className="text-sm text-gray-500 mb-2">Video Preview:</p>
+                    <div className="relative aspect-video">
+                    <VideoViewer mediaUrl={videoLink} />
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-between items-center mt-4">
                 <span className="text-sm text-gray-500">{content.length} / 280</span>
                 <button

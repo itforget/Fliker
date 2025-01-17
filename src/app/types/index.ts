@@ -5,11 +5,11 @@ export type User = {
 }
 export type Post = {
     id?: number;
-    title: string;
     content: string;
     likes?: Likes[];
     comments?: Comment[];
     createdAt: Date;
+    videoUrl?: string;
     author: {
       id: number;
       name: string;
